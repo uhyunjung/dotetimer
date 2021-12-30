@@ -1,0 +1,67 @@
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> solution(int N, vector<int> stages) {
+    vector<int> answer;
+    int people = stages.size();
+    double* ratio = new double[N+1] {0, }; // N말고 N+1
+    int now = 1;
+
+    sort(stages.begin(), stages.end()); // 오름차순, 내림차순, cmp 기억
+
+    for (int i = 0; i < people; i++)
+    {
+        if (stages[i] == now)
+        {
+            for (int j = i; j < people; j++)
+            {
+                if (stages[j] != now)
+                {
+                    ratio[now-1] /= (double)(people - i);
+                    now++;
+                    j--;
+                    i = j;
+                    break;
+                }
+                else
+                {
+                    ratio[now-1] += 1.0;
+                    
+                    // 끝지점
+                    if (j == people - 1)
+                    {
+                        ratio[now - 1] /= (double)(people - i);
+                        now++;
+                        i = j;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            now++;
+            i--;
+        }
+    }
+
+    for (int j = 0; j < N; j++)
+    {
+        now = 0;
+        for (int i = 0; i < N; i++)
+        {
+            if (ratio[i] > ratio[now])
+            {
+                now = i;
+            }
+        }
+
+        answer.push_back(now + 1);
+        ratio[now] = -1;
+    }
+
+    return answer;
+}
