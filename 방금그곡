@@ -1,0 +1,41 @@
+from collections import deque
+
+def change(st):
+    st = st.replace("C#","c")
+    st = st.replace("D#","d")
+    st = st.replace("F#","f")
+    st = st.replace("G#","g")
+    st = st.replace("A#","a")
+    return st
+
+def solution(m, musicinfos):
+    answer = ''
+    res = []
+    mp = {}
+    
+    for mu in musicinfos:
+        info = mu.split(',')
+        
+        time = (int(info[1][0:2])-int(info[0][0:2]))*60+(int(info[1][3:5])-int(info[0][3:5]))
+        mp[info[2]]=time
+        
+        m = change(m)
+        info[3] = change(info[3])
+        st = ""
+        
+        for t in range(time):
+            st+=info[3][t%len(info[3])]
+        
+        if m in st:
+            res.append(info[2])
+
+    maxNum = 0
+    for r in res:
+        if maxNum < mp[r]:
+            maxNum = mp[r]
+            answer = r
+            
+    if answer == "":
+        answer = "(None)"
+                
+    return answer
