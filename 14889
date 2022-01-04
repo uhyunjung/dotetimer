@@ -1,0 +1,73 @@
+#include <iostream>
+#include <limits.h>
+#include <memory.h>
+
+using namespace std;
+
+int ans = INT_MAX;
+int* visited;
+
+void comb(int** arr, int N, int depth, int idx)
+{
+    if (depth == N/2)
+    {
+        int temp = 0;
+
+        for (int i = 0; i < N-1; i++)
+        {
+            for (int j = i+1; j < N; j++)
+            {
+                if ((visited[i]==1) && (visited[j]==1))
+                {
+                    temp += arr[i][j];
+                    temp += arr[j][i];
+                }
+                else if ((visited[i]==0) && (visited[j]==0))
+                {
+                    temp -= arr[i][j];
+                    temp -= arr[j][i];
+                }
+            }
+        }
+
+        ans = min(abs(temp), ans);
+
+        return;
+    }
+
+    for (int i = idx+1; i < N; i++)
+    {
+        if (!visited[i])
+        {
+            visited[i] = 1;
+            comb(arr, N, depth + 1, i);
+            visited[i] = 0;
+        }
+    }
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(0);
+    cin.tie(0), cout.tie(0);
+
+    int N;
+    cin >> N;
+
+    int** arr = new int* [N];
+    visited = new int[N];
+    memset(visited, 0, N * sizeof(int));
+
+    for (int i = 0; i < N; i++)
+    {
+        arr[i] = new int[N];
+        for (int j = 0; j < N; j++)
+        {
+            cin >> arr[i][j];
+        }
+    }
+
+    comb(arr, N, 0, -1);
+
+    cout << ans;
+}
