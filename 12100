@@ -1,0 +1,222 @@
+#include <iostream>
+#include <limits.h>
+#include <memory.h>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+int ans = 0;
+int N = 0;
+
+struct info {
+	vector<vector<int>> arr;
+	int depth;
+};
+
+// int** arr 매개변수는 call by reference
+vector<vector<int>> mov(vector<vector<int>> arr, int d)
+{
+	if (d == 0)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int idx = 0;
+			for (int j = 0; j < N; j++)
+			{
+				if (arr[j][i] != 0)
+				{
+					arr[idx][i] = arr[j][i];
+					if (j != idx) arr[j][i] = 0;
+					idx++;
+				}
+			}
+
+			for (int j = 0; j < N - 1; j++)
+			{
+				if (arr[j][i] == arr[j + 1][i])
+				{
+					arr[j][i] += arr[j + 1][i];
+					arr[j + 1][i] = 0;
+				}
+			}
+
+			idx = 0;
+			for (int j = 0; j < N; j++)
+			{
+				if (arr[j][i] != 0)
+				{
+					arr[idx][i] = arr[j][i];
+					if (j != idx) arr[j][i] = 0;
+					idx++;
+				}
+			}
+		}
+	}
+	else if (d == 1)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int idx = N - 1;
+			for (int j = N - 1; j >= 0; j--)
+			{
+				if (arr[j][i] != 0)
+				{
+					arr[idx][i] = arr[j][i];
+					if (j != idx) arr[j][i] = 0;
+					idx--;
+				}
+			}
+
+			for (int j = N - 1; j > 0; j--)
+			{
+				if (arr[j][i] == arr[j - 1][i])
+				{
+					arr[j][i] += arr[j - 1][i];
+					arr[j - 1][i] = 0;
+				}
+			}
+
+			idx = N - 1;
+			for (int j = N - 1; j >= 0; j--)
+			{
+				if (arr[j][i] != 0)
+				{
+					arr[idx][i] = arr[j][i];
+					if (j != idx) arr[j][i] = 0;
+					idx--;
+				}
+			}
+		}
+	}
+	else if (d == 2)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int idx = 0;
+			for (int j = 0; j < N; j++)
+			{
+				if (arr[i][j] != 0)
+				{
+					arr[i][idx] = arr[i][j];
+					if (j != idx) arr[i][j] = 0;
+					idx++;
+				}
+			}
+
+			for (int j = 0; j < N - 1; j++)
+			{
+				if (arr[i][j] == arr[i][j + 1])
+				{
+					arr[i][j] += arr[i][j + 1];
+					arr[i][j + 1] = 0;
+				}
+			}
+
+			idx = 0;
+			for (int j = 0; j < N; j++)
+			{
+				if (arr[i][j] != 0)
+				{
+					arr[i][idx] = arr[i][j];
+					if (j != idx) arr[i][j] = 0;
+					idx++;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int idx = N - 1;
+			for (int j = N - 1; j >= 0; j--)
+			{
+				if (arr[i][j] != 0)
+				{
+					arr[i][idx] = arr[i][j];
+					if (j != idx) arr[i][j] = 0;
+					idx--;
+				}
+			}
+
+			for (int j = N - 1; j > 0; j--)
+			{
+				if (arr[i][j] == arr[i][j - 1])
+				{
+					arr[i][j] += arr[i][j - 1];
+					arr[i][j - 1] = 0;
+				}
+			}
+
+			idx = N - 1;
+			for (int j = N - 1; j >= 0; j--)
+			{
+				if (arr[i][j] != 0)
+				{
+					arr[i][idx] = arr[i][j];
+					if (j != idx) arr[i][j] = 0;
+					idx--;
+				}
+			}
+		}
+	}
+
+	return arr;
+}
+
+void bfs(vector<vector<int>> arr, int depth)
+{
+	queue<info> q;
+
+	q.push({ arr, depth });
+	while (!q.empty())
+	{
+		info temp = q.front();
+		q.pop();
+
+		if (temp.depth == 5)
+		{
+			for (int i = 0; i < N; i++)
+			{
+				for (int j = 0; j < N; j++)
+				{
+					if (ans < temp.arr[i][j])
+					{
+						ans = temp.arr[i][j];
+					}
+				}
+			}
+			continue;
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			vector<vector<int>> a = mov(temp.arr, i);
+
+			q.push({ a, temp.depth + 1 });
+		}
+	}
+}
+
+int main()
+{
+	ios_base::sync_with_stdio(0);
+	cin.tie(0), cout.tie(0);
+
+	cin >> N;
+
+	vector<vector<int>> arr(N, vector<int>(N, 0));
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			cin >> arr[i][j];
+		}
+	}
+
+	bfs(arr, 0);
+
+	cout << ans;
+}
