@@ -1,0 +1,85 @@
+#include <iostream>
+#include <limits.h>
+#include <memory.h>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+int ans = 0, N = 0,  K = 0;
+// 상우하좌 0, 1, 2, 3
+int dx[4] = { 0, 1, 0, -1 };
+int dy[4] = { -1, 0, 1, 0 };
+
+struct snake {
+	vector<vector<int>> body;
+	int hx, hy, tx, ty;
+};
+
+void path(vector<vector<int>> arr, vector<pair<int, char>> v, snake s, int dir)
+{
+	while ((v.size() == 0) || (ans < v[0].first))
+	{
+		s.body[s.hy][s.hx] = dir;
+
+		ans++;
+		s.hx += dx[dir];
+		s.hy += dy[dir];
+
+		if ((s.hx < 0) || (s.hy < 0) || (s.hx >= N) || (s.hy >= N)) return;
+		if ((s.body[s.hy][s.hx]) != -1) return;
+
+		if (arr[s.hy][s.hx] == 0) {
+			int t = s.body[s.ty][s.tx];
+			s.body[s.ty][s.tx] = -1;
+			if (t != -1) {
+				s.tx += dx[t];
+				s.ty += dy[t];
+			}
+		}
+		else {
+			arr[s.hy][s.hx] = 0;
+		}
+	}
+
+	char d = v[0].second;
+	v.erase(v.begin());
+	// 0 : (1, 3), 1 : (2, 0), 2 : (3, 1), 3 : (0, 2)
+	if (d == 'D') path(arr, v, s, (dir + 1) % 4);
+	else path(arr, v, s, (dir + 3) % 4);
+}
+
+int main()
+{
+	ios_base::sync_with_stdio(0);
+	cin.tie(0), cout.tie(0);
+
+	cin >> N >> K;
+
+	vector<vector<int>> arr(N, vector<int>(N, 0));
+	vector<vector<int>> body(N, vector<int>(N, -1));
+
+	for (int i = 0; i < K; i++)
+	{
+		int a = 0, b = 0;
+		cin >> a >> b;
+		arr[a - 1][b - 1] = 1;
+	}
+
+	int L; cin >> L;
+
+	vector<pair<int, char>> v;
+
+	for (int i = 0; i < L; i++)
+	{
+		int a;
+		char b;
+		cin >> a >> b;
+		v.push_back({ a, b });
+	}
+
+	snake s = { body, 0, 0, 0, 0 };
+	path(arr, v, s, 1); // 우 시작
+
+	cout << ans;
+}
