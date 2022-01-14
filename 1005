@@ -1,0 +1,70 @@
+#include <iostream>
+#include <queue>
+#include <memory.h>
+
+using namespace std;
+
+int main()
+{
+	ios_base::sync_with_stdio(0);
+	cin.tie(0), cout.tie(0);
+	
+	int t, n, k, w;
+	cin >> t;
+
+	for (int i = 0; i < t; i++)
+	{
+		cin >> n >> k;
+
+		int* time = new int[n];
+		int* ans = new int[n];
+		int* indegree = new int[n];
+		int** graph = new int* [n];
+		queue<int> q;
+
+		for (int i = 0; i < n; i++)
+		{
+			cin >> time[i];
+			graph[i] = new int[n];
+			memset(graph[i], 0, sizeof(int) * n);
+			ans[i] = 0;
+			indegree[i] = 0;
+		}
+
+		for (int i = 0; i < k; i++)
+		{
+			int a, b;
+			cin >> a >> b;
+			graph[a - 1][b - 1] = 1;
+			indegree[b - 1]++;
+		}
+		cin >> w;
+
+		for (int i = 0; i < n; i++)
+		{
+			if (indegree[i] == 0)
+			{
+				q.push(i);
+				ans[i] = time[i];
+			}
+		}
+
+		while (!q.empty())
+		{
+			int temp = q.front();
+			q.pop();
+			
+			for (int i = 0; i < n; i++)
+			{
+				if (graph[temp][i] == 1)
+				{
+					ans[i] = max(ans[i], time[i] + ans[temp]);
+					indegree[i]--;
+					if (indegree[i] == 0) q.push(i);
+				}
+			}
+		}
+
+		cout << ans[w - 1] << "\n";
+	}
+}
