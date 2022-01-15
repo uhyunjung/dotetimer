@@ -11,6 +11,7 @@ void dfs(int m, int n, vector<vector<int>> picture, bool** visited, int x, int y
     visited[y][x] = true;
     num++;
     //cout << x <<" " << y << " " << num << "\n";
+    
     if (x < n-1)
     {
         if ((!visited[y][x+1]) && (picture[y][x] == picture[y][x+1]))
