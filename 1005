@@ -65,7 +65,6 @@ int main()
 				}
 			}
 		}
-
 		cout << ans[w - 1] << "\n";
 	}
 }
