@@ -13,6 +13,7 @@ int main()
 	int n, m, ans = INT_MAX, idx = 0;
 	cin >> n >> m;
 
+
 	vector<int> pos(n, 0);
 	vector<int> dist(n, 0);
 	vector<int> visited(n, 0);
