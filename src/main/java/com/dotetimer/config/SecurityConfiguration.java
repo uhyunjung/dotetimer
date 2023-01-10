@@ -1,7 +1,7 @@
-package com.dotetimer.configure;
+package com.dotetimer.config;
 
-import com.dotetimer.exception.JwtAccessDeniedHandler;
-import com.dotetimer.exception.JwtAuthenticationEntryPoint;
+import com.dotetimer.jwt.JwtAccessDeniedHandler;
+import com.dotetimer.jwt.JwtAuthenticationEntryPoint;
 import com.dotetimer.jwt.JwtAuthenticationFilter;
 import com.dotetimer.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class SecurityConfiguration {
                         .requestMatchers(new AntPathRequestMatcher(("/admin/**"))).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher(("/api/user/sign_up"))).permitAll()
                         .requestMatchers(new AntPathRequestMatcher(("/api/user/sign_in"))).permitAll()
-                        .anyRequest().hasRole("USER"))
+                        .anyRequest().hasRole("USER")) // ROLE 제외
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class) // JwtTokenFilter 커스텀 필터 등록
                 .exceptionHandling()
                 .accessDeniedHandler(new JwtAccessDeniedHandler())

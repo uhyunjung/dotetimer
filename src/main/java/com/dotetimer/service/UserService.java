@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -30,22 +29,35 @@ public class UserService {
     // 회원가입
     public void signUp(UserSignReqDto userSignReqDto) {
         // Null 확인 생략
+        // 유효성 확인
+        if (!checkValidUser(userSignReqDto.getEmail(), userSignReqDto.getPassword()))
+            throw new CustomException(DUPLICATE_RESOURCE);
+
         // 중복 확인
-        checkDuplicateUser(userSignReqDto.getEmail());
+        userRepository.findByEmail(userSignReqDto.getEmail())
+                .ifPresent(param -> {
+                    throw new CustomException(DUPLICATE_RESOURCE); // 중복 키 예외 처리
+                });
 
         // DB 저장
-         userRepository.save(
+        userRepository.save(
                 User.builder()
                         .email(userSignReqDto.getEmail())
                         .password(passwordEncoder.encode(userSignReqDto.getPassword()))
                         .name(userSignReqDto.getEmail().split("@")[0])
+                        .introduction("")
                         .roles(Collections.singletonList("ROLE_USER"))
+                        .profileImage("")
                         .build());
     }
-    
+
     // 로그인
     public JwtResDto signIn(UserSignReqDto userSignReqDto) {
         // Null 확인 생략
+        // 유효성 확인
+        if (!checkValidUser(userSignReqDto.getEmail(), userSignReqDto.getPassword()))
+            throw new CustomException(DUPLICATE_RESOURCE);
+
         // Email 찾기
         User user = userRepository.findByEmail(userSignReqDto.getEmail())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
@@ -53,7 +65,7 @@ public class UserService {
         // Password 확인
         if (!passwordEncoder.matches(userSignReqDto.getPassword(), user.getPassword()))
             throw new CustomException(PASSWORD_NOT_FOUND);
-        
+
         // access 토큰 및 refresh 토큰 생성
         return JwtResDto.builder()
                 .userId(user.getId())
@@ -69,7 +81,9 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // refresh token 유효성 확인
-        checkIfRefreshTokenValid(user.getRefreshToken(), jwtReqDto.getRefreshToken());
+        if (!checkValidRefreshToken(user.getRefreshToken(), jwtReqDto.getRefreshToken()))
+            throw new CustomException(EXPIRE_AUTH_TOKEN);
+
         return JwtResDto.builder()
                 .userId(user.getId())
                 .accessToken(createAccessJwtToken(user, user.getRoles()))
@@ -77,12 +91,11 @@ public class UserService {
                 .build();
     }
 
-    // 중복 사용자 이메일 확인
-    private void checkDuplicateUser(String email) {
-        userRepository.findByEmail(email)
-                .ifPresent(param -> {
-                    throw new CustomException(DUPLICATE_RESOURCE); // 중복 키 예외 처리
-                });
+    // 유효성 확인
+    private boolean checkValidUser(String email, String password) {
+        if (email.split("@")[0].equals("")) return false;
+        if (password.length() < 8) return false;
+        return true;
     }
 
     // access token 발급
@@ -92,15 +105,16 @@ public class UserService {
 
     // refresh token 발급 및 DB 저장
     private String createRefreshJwtToken(User user) {
-        String refreshTokenValue = UUID.randomUUID().toString().replace("-",""); // 유일한 식별자 생성
+        String refreshTokenValue = UUID.randomUUID().toString().replace("-", ""); // 유일한 식별자 생성
         user.setRefreshToken(refreshTokenValue);
         userRepository.save(user);
         return jwtTokenProvider.createRefreshToken(refreshTokenValue);
     }
 
     // 서버의 refresh token, 클라이언트의 refresh token 비교
-    private void checkIfRefreshTokenValid(String requiredValue, String givenRefreshToken) {
+    private boolean checkValidRefreshToken(String requiredValue, String givenRefreshToken) {
         String givenValue = String.valueOf((jwtTokenProvider.getClaims((givenRefreshToken)).get("value")));
-        if(!givenValue.equals(requiredValue)) throw new CustomException(REFRESH_TOKEN_NOT_FOUND); // refresh token 만료
+        if (!givenValue.equals(requiredValue)) return false; // refresh token 만료
+        return true;
     }
 }

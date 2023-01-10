@@ -37,7 +37,9 @@ S3Exception
 @AllArgsConstructor
 public enum ErrorCode {
     // 400 BAD_REQUEST : 잘못된 요청
+    INVALID_LOGIN(HttpStatus.BAD_REQUEST, "이메일이 잘못되거나 비밀번호 길이가 8자 미만입니다"),
     INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "refresh token이 유효하지 않습니다"),
+    INVALID_DATA(HttpStatus.BAD_REQUEST, "잘못된 데이터입니다"),
     MISMATCH_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "refresh token의 유저 정보가 일치하지 않습니다"),
     CANNOT_FOLLOW_MYSELF(HttpStatus.BAD_REQUEST, "자기 자신은 팔로우할 수 없습니다"),
 
@@ -49,13 +51,14 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없는 요청입니다"),
 
     // 404 NOT_FOUND : Resource를 찾을 수 없음
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다"),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 리소스를 찾을 수 없습니다"),
     PASSWORD_NOT_FOUND(HttpStatus.NOT_FOUND, "비밀번호가 틀렸습니다"),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "refresh token이 만료되었습니다"),
     NOT_FOLLOW(HttpStatus.NOT_FOUND, "팔로우 중이지 않습니다"),
 
     // 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다");
+
     private final HttpStatus httpStatus;
     private final String detail;
 }

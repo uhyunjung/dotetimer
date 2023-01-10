@@ -1,5 +1,6 @@
-package com.dotetimer.exception;
+package com.dotetimer.jwt;
 
+import com.dotetimer.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

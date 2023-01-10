@@ -1,21 +1,27 @@
 package com.dotetimer.dto;
 
-import jakarta.validation.constraints.Email;
+import com.dotetimer.domain.Green;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-public class UserDto {
+import java.time.LocalDate;
+import java.util.Map;
+
+public class GroupDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     @NotNull
-    public static class UserSignReqDto {
-        @Email
-        private String email;
+    public static class StudyGroupDto {
+        private String name;
+        private String category;
+        private String theme;
+        private int joinCount;
+        private String details;
         private String password;
     }
 
@@ -24,13 +30,7 @@ public class UserDto {
     @AllArgsConstructor
     @Builder
     @NotNull
-    public static class UserInfoResDto {
-        private String name;
-        private String introduction;
-        private boolean opened;
-        private String profileImage;
-        private boolean premium;
-        private int coinCount;
+    public static class GroupJoinResDto {
+        private int joinCount;
     }
 }
-
