@@ -22,7 +22,7 @@ public class GroupController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(path = "/{groupId}")
+    @GetMapping(path = "/{groupId}") // RequestParam key와 매개변수 이름 일치
     public ResponseEntity<?> getGroup(@PathVariable int groupId) {
         return new ResponseEntity<>(groupService.getGroup(groupId), HttpStatus.OK);
     }

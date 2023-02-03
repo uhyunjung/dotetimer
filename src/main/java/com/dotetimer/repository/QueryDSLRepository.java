@@ -3,7 +3,6 @@ package com.dotetimer.repository;
 
 import com.dotetimer.domain.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 // QueryDSL

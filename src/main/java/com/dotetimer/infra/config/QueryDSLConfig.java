@@ -1,4 +1,4 @@
-package com.dotetimer.config;
+package com.dotetimer.infra.config;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

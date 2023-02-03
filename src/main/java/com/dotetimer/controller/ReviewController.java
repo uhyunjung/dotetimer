@@ -1,7 +1,6 @@
 package com.dotetimer.controller;
 
 import com.dotetimer.domain.User;
-import com.dotetimer.dto.GroupDto;
 import com.dotetimer.dto.ReviewDto.ReviewReqDto;
 import com.dotetimer.service.ReviewService;
 import jakarta.validation.Valid;
@@ -45,7 +44,7 @@ public class ReviewController {
         return new ResponseEntity<>(reviewService.getLikeCount(reviewId), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/like/{reviewId}") // RequestParam key와 매개변수 이름 일치
+    @PostMapping(path = "/like/{reviewId}")
     public ResponseEntity<?> likeReview(@AuthenticationPrincipal User user, @PathVariable int reviewId, @RequestParam String status) {
         reviewService.likeReview(user, reviewId, status);
         return new ResponseEntity<>(HttpStatus.OK);

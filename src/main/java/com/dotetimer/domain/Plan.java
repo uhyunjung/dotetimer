@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -25,13 +24,13 @@ public class Plan {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coin")
+    @JoinColumn(name = "coin_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private Coin coin;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "planInfo")
+    @JoinColumn(name = "plan_info_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private PlanInfo planInfo;

@@ -1,8 +1,5 @@
 package com.dotetimer.dto;
 
-import com.dotetimer.domain.Plan;
-import com.dotetimer.domain.PlanInfo;
-import com.dotetimer.domain.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,12 +15,10 @@ public class PlanDto {
     @AllArgsConstructor
     @Builder
     @NotNull
-    public static class PlanReqDto {
+    public static class PlanInfoReqDto {
         private String title;
         private String category;
         private String color;
-        private LocalTime startTime;
-        private LocalTime endTime;
         private String repeatDay;
         private LocalDate completedAt;
     }
@@ -48,7 +43,7 @@ public class PlanDto {
     @AllArgsConstructor
     @Builder
     @NotNull
-    public static class RecordReqDto {
+    public static class PlanReqDto {
         private LocalTime startTime;
         private LocalTime endTime;
     }

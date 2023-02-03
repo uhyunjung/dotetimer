@@ -1,4 +1,4 @@
-package com.dotetimer.exception;
+package com.dotetimer.infra.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;

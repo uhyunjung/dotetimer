@@ -21,14 +21,14 @@ public class Follow {
     @Column(name = "id")
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "follower")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "follower_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private User follower;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "following")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "following_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private User following;

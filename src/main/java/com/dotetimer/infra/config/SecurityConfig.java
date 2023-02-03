@@ -1,9 +1,9 @@
-package com.dotetimer.config;
+package com.dotetimer.infra.config;
 
-import com.dotetimer.jwt.JwtAccessDeniedHandler;
-import com.dotetimer.jwt.JwtAuthenticationEntryPoint;
-import com.dotetimer.jwt.JwtAuthenticationFilter;
-import com.dotetimer.jwt.JwtTokenProvider;
+import com.dotetimer.infra.jwt.JwtAccessDeniedHandler;
+import com.dotetimer.infra.jwt.JwtAuthenticationEntryPoint;
+import com.dotetimer.infra.jwt.JwtAuthenticationFilter;
+import com.dotetimer.infra.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
-public class SecurityConfiguration {
+public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean

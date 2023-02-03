@@ -2,58 +2,46 @@ package com.dotetimer.service;
 
 import com.dotetimer.domain.GroupJoin;
 import com.dotetimer.domain.StudyGroup;
-import com.dotetimer.domain.Theme;
+import com.dotetimer.infra.Theme;
 import com.dotetimer.domain.User;
 import com.dotetimer.dto.GroupDto.StudyGroupDto;
 import com.dotetimer.dto.GroupDto.GroupJoinResDto;
-import com.dotetimer.exception.CustomException;
-import com.dotetimer.mapper.GroupMapper;
+import com.dotetimer.infra.exception.CustomException;
+import com.dotetimer.infra.mapper.GroupMapper;
 import com.dotetimer.repository.GroupJoinRepository;
 import com.dotetimer.repository.StudyGroupRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.dotetimer.exception.ErrorCode.*;
+import static com.dotetimer.infra.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional // readOnly
+@Transactional
 public class GroupService {
     private final StudyGroupRepository studyGroupRepository;
     private final GroupJoinRepository groupJoinRepository;
     private final GroupMapper groupMapper;
 
     @Transactional
-    public void createGroup(User user, StudyGroupDto studyGroupDto) {
+    public StudyGroup createGroup(User user, StudyGroupDto studyGroupDto) {
         // Null 및 유효성 확인
         if (!checkValidGroup(studyGroupDto.getName(), studyGroupDto.getPassword()))
             throw new CustomException(INVALID_LOGIN);
 
         // DTO -> Entity
-        StudyGroup studyGroup = StudyGroup.builder()
-                .user(user) // User에 StudyGroup 추가
-                .name(studyGroupDto.getName())
-                .category(studyGroupDto.getCategory())
-                .theme(Theme.valueOf(studyGroupDto.getTheme())) // string -> enum
-                .joinCount(studyGroupDto.getJoinCount())
-                .details(studyGroupDto.getDetails())
-                .password(studyGroupDto.getPassword())
-                .createdAt(LocalDate.now())
-                .build();
+        StudyGroup studyGroup = GroupMapper.INSTANCE.toStudyGroup(user, studyGroupDto);
+        GroupJoin groupJoin = GroupMapper.INSTANCE.toGroupJoin(user, studyGroup);
 
         // DB 저장
         studyGroupRepository.save(studyGroup);
-        groupJoinRepository.save(
-                GroupJoin.builder()
-                        .user(user) // User에 GroupJoin 추가
-                        .studyGroup(studyGroup)
-                        .joinedAt(LocalDate.now())
-                        .build());
+        groupJoinRepository.save(groupJoin);
+
+        return  studyGroup;
     }
 
     public StudyGroupDto getGroup(int groupId) {
@@ -66,7 +54,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void updateGroup(int groupId, StudyGroupDto studyGroupDto) {
+    public StudyGroup updateGroup(int groupId, StudyGroupDto studyGroupDto) {
         // Null 및 유효성 확인
         if (!checkValidGroup(studyGroupDto.getName(), studyGroupDto.getPassword()))
             throw new CustomException(INVALID_LOGIN);
@@ -80,10 +68,12 @@ public class GroupService {
 
         // DB 저장
         studyGroupRepository.save(studyGroup);
+
+        return studyGroup;
     }
 
     @Transactional
-    public void deleteGroup(User user, int groupId) {
+    public StudyGroup deleteGroup(User user, int groupId) {
         // 그룹 찾기
         StudyGroup studyGroup = studyGroupRepository.findById(groupId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
@@ -100,6 +90,8 @@ public class GroupService {
         // User에 StudyGroup, GroupJoin 삭제
         user.getStudyGroups().remove(studyGroup);
         user.getGroupJoins().remove(groupJoin);
+
+        return studyGroup;
     }
 
     @Transactional
@@ -114,13 +106,13 @@ public class GroupService {
         StudyGroup studyGroup = studyGroupRepository.findById(groupId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
+        // 그룹 인원 제한
+        if (studyGroup.getJoinCount() < groupJoinRepository.findUsersByGroup(user.getId()).size() + 1) throw new CustomException(LIMIT_DATA);
+
+        GroupJoin groupJoin = GroupMapper.INSTANCE.toGroupJoin(user, studyGroup);
+
         // DB 저장
-        groupJoinRepository.save(
-                GroupJoin.builder()
-                        .user(user) // User에 GroupJoin 추가
-                        .studyGroup(studyGroup)
-                        .joinedAt(LocalDate.now())
-                        .build());
+        groupJoinRepository.save(groupJoin);
 
         return GroupJoinResDto.builder()
                 .joinCount(groupJoinRepository.findUsersByGroup(user.getId()).size()) // count
@@ -128,7 +120,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void exitGroup(User user, int groupId) {
+    public GroupJoin exitGroup(User user, int groupId) {
 //        // 존재 여부 확인
 //        if (user.get)// (groupJoinRepository.findByUserAndGroup(user.getId(), groupId) == null)
 //            throw new CustomException(MEMBER_NOT_FOUND);
@@ -144,21 +136,28 @@ public class GroupService {
 
         // User에 GroupJoin 삭제
         user.getGroupJoins().remove(groupJoin);
+
+        return groupJoin;
     }
 
     // user.getGroups : 본인이 만든 그룹 리스트
     // getGroupJoinList : 본인이 속한 그룹 리스트
     public List<StudyGroupDto> getGroupJoinList(User user) {
-        // 그룹 및 그룹 참가 정보 찾기
-        List<StudyGroup> studyGroups = user.getStudyGroups().stream().toList(); // groupJoinRepository.findGroupsByUser(user.getId());
         List<StudyGroupDto> studyGroupDtos = new ArrayList<>();
-        studyGroups.forEach(o -> {
-                    // Entity 수정
-                    o.updateStudyGroup(o.getName(), o.getCategory(), o.getTheme(), groupJoinRepository.findUsersByGroup(user.getId()).size(), o.getDetails(), o.getPassword());
-                    // Entity -> DTO
-                    studyGroupDtos.add(groupMapper.INSTANCE.toStudyGroupDto(o));
-                }
-        );
+        List<GroupJoin> groupJoins = user.getGroupJoins().stream().toList();
+        groupJoins.forEach(o -> {
+            studyGroupDtos.add(groupMapper.INSTANCE.toStudyGroupDto(o.getStudyGroup()));
+        });
+
+//        // 그룹 및 그룹 참가 정보 찾기
+//        List<StudyGroup> studyGroups = user.getStudyGroups().stream().toList(); // groupJoinRepository.findGroupsByUser(user.getId());
+//        studyGroups.forEach(o -> {
+//                    // Entity 수정
+//                    o.updateStudyGroup(o.getName(), o.getCategory(), o.getTheme(), groupJoinRepository.findUsersByGroup(user.getId()).size(), o.getDetails(), o.getPassword());
+//                    // Entity -> DTO
+//                    studyGroupDtos.add(groupMapper.INSTANCE.toStudyGroupDto(o));
+//                }
+//        );
         return studyGroupDtos;
     }
 

@@ -1,6 +1,6 @@
-package com.dotetimer.jwt;
+package com.dotetimer.infra.jwt;
 
-import com.dotetimer.exception.CustomException;
+import com.dotetimer.infra.exception.CustomException;
 import com.dotetimer.service.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -17,8 +17,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 
-import static com.dotetimer.exception.ErrorCode.EXPIRE_AUTH_TOKEN;
-import static com.dotetimer.exception.ErrorCode.INVALID_AUTH_TOKEN;
+import static com.dotetimer.infra.exception.ErrorCode.EXPIRE_AUTH_TOKEN;
+import static com.dotetimer.infra.exception.ErrorCode.INVALID_AUTH_TOKEN;
 
 // Jwt 토큰 발급 및 실제 검증
 @Slf4j

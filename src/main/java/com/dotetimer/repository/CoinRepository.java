@@ -7,5 +7,5 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface CoinRepository extends JpaRepository<Coin, Integer> {
-    Optional<Coin> findByIdAndStudiedAt(int id, LocalDate studiedAt);
+    Optional<Coin> findByUserIdAndStudiedAt(int userId, LocalDate studiedAt);
 }

@@ -22,13 +22,13 @@ public class ReviewLike {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "user")
+    @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private User user;
 
     @OneToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "review")
+    @JoinColumn(name = "review_id")
     @NotNull
     private Review review;
 }

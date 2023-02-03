@@ -1,6 +1,5 @@
 package com.dotetimer.dto;
 
-import com.dotetimer.domain.Green;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +39,7 @@ public class StatDto {
     @Builder
     @NotNull
     public static class StatInfoDto {
+        private int userId;
         private String userName;
         private int totalTime;
         private boolean attendance;

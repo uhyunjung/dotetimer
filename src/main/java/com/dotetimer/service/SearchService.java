@@ -4,7 +4,7 @@ import com.dotetimer.domain.StudyGroup;
 import com.dotetimer.domain.User;
 import com.dotetimer.dto.GroupDto.StudyGroupDto;
 import com.dotetimer.dto.UserDto.UserInfoResDto;
-import com.dotetimer.mapper.SearchMapper;
+import com.dotetimer.infra.mapper.SearchMapper;
 import com.dotetimer.repository.StudyGroupRepository;
 import com.dotetimer.repository.UserRepository;
 import jakarta.transaction.Transactional;

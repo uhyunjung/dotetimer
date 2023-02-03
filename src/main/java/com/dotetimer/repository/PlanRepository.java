@@ -3,6 +3,8 @@ package com.dotetimer.repository;
 import com.dotetimer.domain.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PlanRepository extends JpaRepository<Plan, Integer>, QueryDSLRepository {
+import java.util.Optional;
 
+public interface PlanRepository extends JpaRepository<Plan, Integer>, QueryDSLRepository {
+    Optional<Plan> findByIdAndRecorded(int userId, boolean recorded);
 }

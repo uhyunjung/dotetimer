@@ -1,4 +1,4 @@
-package com.dotetimer.config;
+package com.dotetimer.infra.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

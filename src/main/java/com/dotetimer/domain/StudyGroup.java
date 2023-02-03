@@ -1,5 +1,6 @@
 package com.dotetimer.domain;
 
+import com.dotetimer.infra.Theme;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -23,15 +24,15 @@ public class StudyGroup {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "user") // 외래키 있는 테이블의 객체의 필드명
+    @JoinColumn(name = "user_id") // 외래키 있는 테이블의 속성명
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @NotNull
     private User user;
     private String name;
     private String category;
-
     @Enumerated(EnumType.STRING)
     private Theme theme;
     private int joinCount;
-    // @Lob // Large Object // 한글 깨짐
     private String details;
     private String password;
     private LocalDate createdAt;

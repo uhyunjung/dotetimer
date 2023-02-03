@@ -1,14 +1,15 @@
 package com.dotetimer.service;
 
 import com.dotetimer.domain.User;
-import com.dotetimer.dto.JwtDto.JwtReqDto;
-import com.dotetimer.dto.JwtDto.JwtResDto;
+import com.dotetimer.dto.UserDto.UserJwtReqDto;
+import com.dotetimer.dto.UserDto.UserJwtResDto;
 import com.dotetimer.dto.UserDto.UserSignReqDto;
-import com.dotetimer.exception.CustomException;
-import com.dotetimer.jwt.JwtTokenProvider;
+import com.dotetimer.infra.exception.CustomException;
+import com.dotetimer.infra.jwt.JwtTokenProvider;
 import com.dotetimer.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,18 +17,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static com.dotetimer.exception.ErrorCode.*;
+import static com.dotetimer.infra.exception.ErrorCode.*;
 
 @Service
-@RequiredArgsConstructor
-@Transactional
+@RequiredArgsConstructor // final 초기화
+@Transactional // readOnly
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
     // 회원가입
-    public void signUp(UserSignReqDto userSignReqDto) {
+    public User signUp(UserSignReqDto userSignReqDto) {
         // Null 확인 생략
         // 유효성 확인
         if (!checkValidUser(userSignReqDto.getEmail(), userSignReqDto.getPassword()))
@@ -39,56 +41,71 @@ public class UserService {
                     throw new CustomException(DUPLICATE_RESOURCE); // 중복 키 예외 처리
                 });
 
+        User user = User.builder()
+                .email(userSignReqDto.getEmail())
+                .password(passwordEncoder.encode(userSignReqDto.getPassword()))
+                .name(userSignReqDto.getEmail().split("@")[0])
+                .introduction("")
+                .roles(Collections.singletonList("ROLE_USER"))
+                .img("")
+                .build();
+
         // DB 저장
-        userRepository.save(
-                User.builder()
-                        .email(userSignReqDto.getEmail())
-                        .password(passwordEncoder.encode(userSignReqDto.getPassword()))
-                        .name(userSignReqDto.getEmail().split("@")[0])
-                        .introduction("")
-                        .roles(Collections.singletonList("ROLE_USER"))
-                        .profileImage("")
-                        .build());
+        userRepository.save(user);
+
+        // 로그 출력
+        log.info("회원가입 성공");
+        return user;
     }
 
     // 로그인
-    public JwtResDto signIn(UserSignReqDto userSignReqDto) {
+    public UserJwtResDto signIn(UserSignReqDto userSignReqDto) {
         // Null 확인 생략
         // 유효성 확인
         if (!checkValidUser(userSignReqDto.getEmail(), userSignReqDto.getPassword()))
-            throw new CustomException(DUPLICATE_RESOURCE);
+            throw new CustomException(INVALID_LOGIN);
 
         // Email 찾기
         User user = userRepository.findByEmail(userSignReqDto.getEmail())
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         // Password 확인
         if (!passwordEncoder.matches(userSignReqDto.getPassword(), user.getPassword()))
             throw new CustomException(PASSWORD_NOT_FOUND);
 
-        // access 토큰 및 refresh 토큰 생성
-        return JwtResDto.builder()
+        UserJwtResDto userJwtResDto = UserJwtResDto.builder()
                 .userId(user.getId())
                 .accessToken(createAccessJwtToken(user, user.getRoles()))
                 .refreshToken(createRefreshJwtToken(user))
                 .build();
+
+        // 로그 출력
+        log.info("로그인 성공");
+
+        // access 토큰 및 refresh 토큰 생성
+        return userJwtResDto;
     }
 
     // refresh 토큰 재발급
-    public JwtResDto refreshToken(JwtReqDto jwtReqDto) {
+    public UserJwtResDto refreshToken(UserJwtReqDto userJwtReqDto) {
         // Email 찾기
-        User user = userRepository.findByEmail(jwtReqDto.getEmail())
+        User user = userRepository.findByEmail(userJwtReqDto.getEmail())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // refresh token 유효성 확인
-        if (!checkValidRefreshToken(user.getRefreshToken(), jwtReqDto.getRefreshToken()))
+        if (!checkValidRefreshToken(user.getRefreshToken(), userJwtReqDto.getRefreshToken()))
             throw new CustomException(EXPIRE_AUTH_TOKEN);
 
-        return JwtResDto.builder()
+        UserJwtResDto userJwtResDto = UserJwtResDto.builder()
                 .userId(user.getId())
                 .accessToken(createAccessJwtToken(user, user.getRoles()))
                 .refreshToken(createRefreshJwtToken(user))
                 .build();
+
+        // 로그 출력
+        log.info("토큰 발급 완료");
+
+        return userJwtResDto;
     }
 
     // 유효성 확인

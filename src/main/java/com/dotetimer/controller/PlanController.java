@@ -1,8 +1,7 @@
 package com.dotetimer.controller;
 
 import com.dotetimer.domain.User;
-import com.dotetimer.dto.PlanDto.PlanReqDto;
-import com.dotetimer.dto.PlanDto.RecordReqDto;
+import com.dotetimer.dto.PlanDto.*;
 import com.dotetimer.service.PlanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,36 +19,36 @@ import java.time.LocalDate;
 public class PlanController {
     private final PlanService planService;
 
-    @PostMapping(path = "")
-    public ResponseEntity<?> createPlan(@AuthenticationPrincipal User user, @Valid @RequestBody PlanReqDto planReqDto) {
-        planService.createPlan(user, planReqDto);
+    @PostMapping(path = "/info")
+    public ResponseEntity<?> createPlanInfo(@AuthenticationPrincipal User user, @Valid @RequestBody PlanInfoReqDto planInfoReqDto) {
+        planService.createPlanInfo(user, planInfoReqDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(path = "/record/{planInfoId}")
-    public ResponseEntity<?> createRecord(@AuthenticationPrincipal User user, @PathVariable int planInfoId, @Valid @RequestBody RecordReqDto recordReqDto) {
-        planService.createRecord(user, recordReqDto, planInfoId);
+    @PutMapping(path = "/info/{planInfoId}")
+    public ResponseEntity<?> updatePlanInfo(@PathVariable int planInfoId, @Valid @RequestBody PlanInfoReqDto planInfoReqDto) {
+        planService.updatePlanInfo(planInfoReqDto, planInfoId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(path = "{planId}")
+    @PostMapping(path = "/{planInfoId}")
+    public ResponseEntity<?> createPlanOrRecord(@AuthenticationPrincipal User user, @PathVariable int planInfoId, @RequestParam(name = "record") boolean record, @Valid @RequestBody PlanReqDto planReqDto) {
+        planService.createPlanOrRecord(user, planReqDto, planInfoId, record);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/{planId}")
     public ResponseEntity<?> getPlan(@PathVariable int planId) {
         return new ResponseEntity<>(planService.getPlan(planId), HttpStatus.OK);
     }
 
-    @PutMapping(path = "{planId}")
-    public ResponseEntity<?> updatePlan(@PathVariable int planId, @Valid @RequestBody PlanReqDto planReqDto) {
-        planService.updatePlan(planId, planReqDto);
+    @PutMapping(path = "/{planId}")
+    public ResponseEntity<?> updatePlanOrRecord(@AuthenticationPrincipal User user, @PathVariable int planId, @RequestParam(name = "record") boolean record, @Valid @RequestBody PlanReqDto planReqDto) {
+        planService.updatePlanOrRecord(user, planReqDto, planId, record);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PutMapping(path = "/record/{planId}")
-    public ResponseEntity<?> updateRecord(@PathVariable int planId, @Valid @RequestBody RecordReqDto recordReqDto) {
-        planService.updateRecord(planId, recordReqDto);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @DeleteMapping(path = "{planId}")
+    @DeleteMapping(path = "/{planId}")
     public ResponseEntity<?> deletePlan(@AuthenticationPrincipal User user, @PathVariable int planId) {
         planService.deletePlan(user, planId);
         return new ResponseEntity<>(HttpStatus.OK);

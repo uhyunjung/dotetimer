@@ -1,11 +1,10 @@
-package com.dotetimer.jwt;
+package com.dotetimer.infra.jwt;
 
-import com.dotetimer.exception.ErrorResponse;
+import com.dotetimer.infra.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,7 @@ import java.io.IOException;
 
 import org.json.JSONObject;
 
-import static com.dotetimer.exception.ErrorCode.FORBIDDEN;
+import static com.dotetimer.infra.exception.ErrorCode.FORBIDDEN;
 
 // 403 Forbidden Exception 처리(권한 제한)
 @Slf4j
@@ -37,7 +36,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         json.put("path", request.getRequestURI());
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setHeader("content-type", "application/json"); // response.setContentType("application/json");
+        response.setHeader("Content-Type", "application/json"); // response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
         response.getWriter().print(json);
         response.getWriter().flush();

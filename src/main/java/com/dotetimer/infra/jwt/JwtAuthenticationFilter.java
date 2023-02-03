@@ -1,10 +1,8 @@
-package com.dotetimer.jwt;
+package com.dotetimer.infra.jwt;
 
-import com.dotetimer.exception.CustomException;
+import com.dotetimer.infra.exception.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-import static com.dotetimer.exception.ErrorCode.INVALID_AUTH_TOKEN;
 
 // Jwt 토큰 검증 요청 및 저장(Request마다 1회 실행)
 @RequiredArgsConstructor

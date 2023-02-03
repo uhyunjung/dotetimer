@@ -1,7 +1,5 @@
 package com.dotetimer.dto;
 
-import com.dotetimer.domain.User;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

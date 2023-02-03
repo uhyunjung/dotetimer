@@ -23,7 +23,7 @@ public class Donate {
     private int id;
 
     @OneToOne(fetch = FetchType.LAZY) // 다대일 양방향
-    @JoinColumn(name = "user")
+    @JoinColumn(name = "user_id")
     @NotNull
     private User user;
     private LocalDate donatedAt;

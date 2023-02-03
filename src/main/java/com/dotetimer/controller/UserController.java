@@ -1,11 +1,10 @@
 package com.dotetimer.controller;
 
-import com.dotetimer.dto.JwtDto.JwtReqDto;
+import com.dotetimer.dto.UserDto;
 import com.dotetimer.dto.UserDto.UserSignReqDto;
 import com.dotetimer.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/refresh_token")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody JwtReqDto jwtReqDto) {
-        return new ResponseEntity<>(userService.refreshToken(jwtReqDto), HttpStatus.OK);
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody UserDto.UserJwtReqDto userJwtReqDto) {
+        return new ResponseEntity<>(userService.refreshToken(userJwtReqDto), HttpStatus.OK);
     }
 }

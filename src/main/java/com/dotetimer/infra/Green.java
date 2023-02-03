@@ -1,4 +1,4 @@
-package com.dotetimer.domain;
+package com.dotetimer.infra;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

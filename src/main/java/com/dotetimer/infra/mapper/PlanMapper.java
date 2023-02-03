@@ -1,18 +1,25 @@
-package com.dotetimer.mapper;
+package com.dotetimer.infra.mapper;
 
 import com.dotetimer.domain.Plan;
 import com.dotetimer.domain.PlanInfo;
-import com.dotetimer.domain.User;
-import com.dotetimer.dto.PlanDto.PlanReqDto;
-import com.dotetimer.dto.PlanDto.PlanResDto;
+import com.dotetimer.dto.PlanDto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-
-import java.time.LocalDate;
 
 @Mapper(componentModel = "spring")
 public interface PlanMapper {
     PlanMapper INSTANCE = Mappers.getMapper(PlanMapper.class);
+
+    // DTO -> Entity
+    default PlanInfo toPlanInfo(PlanInfoReqDto planInfoReqDto) {
+        return PlanInfo.builder()
+                .title(planInfoReqDto.getTitle())
+                .category(planInfoReqDto.getCategory())
+                .color(planInfoReqDto.getColor())
+                .repeatDay(planInfoReqDto.getRepeatDay())
+                .completedAt(planInfoReqDto.getCompletedAt())
+                .build();
+    }
 
     // Entity -> DTO
     default PlanResDto toPlanResDto(Plan plan, PlanInfo planInfo) {

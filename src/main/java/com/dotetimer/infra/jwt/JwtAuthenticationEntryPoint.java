@@ -1,6 +1,6 @@
-package com.dotetimer.jwt;
+package com.dotetimer.infra.jwt;
 
-import com.dotetimer.exception.ErrorResponse;
+import com.dotetimer.infra.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-import static com.dotetimer.exception.ErrorCode.EXPIRE_AUTH_TOKEN;
-import static com.dotetimer.exception.ErrorCode.INVALID_AUTH_TOKEN;
+import static com.dotetimer.infra.exception.ErrorCode.EXPIRE_AUTH_TOKEN;
+import static com.dotetimer.infra.exception.ErrorCode.INVALID_AUTH_TOKEN;
 
 // 401 Unauthorized Exception 처리(인증 실패)
 @Slf4j

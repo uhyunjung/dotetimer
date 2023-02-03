@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Table(name="user")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 전략 종류 Identity, Sequence, Table
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 기본키 매핑 전략 종류 Identity, Sequence, Table
     @Column(name = "id") // 테이블 Key vs joinColumn
     private int id;
 
@@ -40,8 +40,7 @@ public class User implements UserDetails {
     @ColumnDefault("false")
     private boolean opened;
 
-    @Column(name = "user_img")
-    private String profileImage;
+    private String img;
 
     @ColumnDefault("false")
     private boolean premium;
@@ -53,8 +52,8 @@ public class User implements UserDetails {
     private String refreshToken;
 
     @Builder.Default
-    @OneToMany(mappedBy="user", cascade=CascadeType.ALL) // 외래키 있는 테이블의 객체의 필드명
-    private List<StudyGroup> studyGroups = new ArrayList<>(); // 외래키 있는 테이블의 객체
+    @OneToMany(mappedBy="user", cascade=CascadeType.ALL) // 지연로딩, 외래키 있는 도메인의 필드명
+    private List<StudyGroup> studyGroups = new ArrayList<>(); // 외래키 있는 테이블의 객체 리스트
 
     @Builder.Default
     @OneToMany(mappedBy="user", cascade=CascadeType.ALL)
@@ -98,7 +97,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email.split("@")[0];
+        return email; // 기본키
     }
 
     @Override
@@ -121,7 +120,22 @@ public class User implements UserDetails {
         return true;
     }
 
+    public void updateInfo(String name, String introduction, boolean opened, String img) {
+        this.name = name;
+        this.introduction = introduction;
+        this.opened = opened;
+        this.img = img;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
     public void updateCoin(int coinCount) {
-        this.coinCount=coinCount;
+        this.coinCount = coinCount;
+    }
+
+    public void updatPremium(boolean premium) {
+        this.premium = premium;
     }
 }

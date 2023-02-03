@@ -24,13 +24,13 @@ public class GroupJoin {
     private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user")
+    @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "studyGroup")
+    @JoinColumn(name = "study_group_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
     private StudyGroup studyGroup;

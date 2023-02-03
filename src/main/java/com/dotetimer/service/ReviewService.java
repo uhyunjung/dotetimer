@@ -4,8 +4,8 @@ import com.dotetimer.domain.*;
 import com.dotetimer.dto.ReviewDto.ReviewLikeDto;
 import com.dotetimer.dto.ReviewDto.ReviewReqDto;
 import com.dotetimer.dto.ReviewDto.ReviewResDto;
-import com.dotetimer.exception.CustomException;
-import com.dotetimer.mapper.ReviewMapper;
+import com.dotetimer.infra.exception.CustomException;
+import com.dotetimer.infra.mapper.ReviewMapper;
 import com.dotetimer.repository.ReviewLikeRepository;
 import com.dotetimer.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.dotetimer.exception.ErrorCode.*;
+import static com.dotetimer.infra.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class ReviewService {
     private final ReviewLikeRepository reviewLikeRepository;
 
     @Transactional
-    public void createReview(User user, ReviewReqDto reviewReqDto) {
+    public Review createReview(User user, ReviewReqDto reviewReqDto) {
         // Null 및 유효성 확인
         if (!checkValidReview(reviewReqDto.getBad(), reviewReqDto.getGood(), reviewReqDto.getPlan()))
             throw new CustomException(INVALID_DATA);
@@ -39,18 +39,12 @@ public class ReviewService {
             throw new CustomException(DUPLICATE_RESOURCE);
 
         // DTO -> Entity
-        Review review = Review.builder()
-                .user(user)
-                .bad(reviewReqDto.getBad())
-                .good(reviewReqDto.getGood())
-                .plan(reviewReqDto.getPlan())
-                .reviewedAt(reviewReqDto.getReviewedAt())
-                .build();
+        Review review = ReviewMapper.INSTANCE.toReview(user, reviewReqDto);
 
         // DB 저장
         reviewRepository.save(review);
 
-        // User에 review 추가됨
+        return review;
     }
 
     public ReviewResDto getReview(int reviewId) {
@@ -63,7 +57,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public void updateReview(int reviewId, ReviewReqDto reviewReqDto) {
+    public Review updateReview(int reviewId, ReviewReqDto reviewReqDto) {
         // Null 및 유효성 확인
         if (!checkValidReview(reviewReqDto.getBad(), reviewReqDto.getGood(), reviewReqDto.getPlan()))
             throw new CustomException(INVALID_DATA);
@@ -77,10 +71,12 @@ public class ReviewService {
         
         // DB 저장
         reviewRepository.save(review);
+
+        return review;
     }
 
     @Transactional
-    public void deleteReview(User user, int reviewId) {
+    public Review deleteReview(User user, int reviewId) {
         // 하루세줄 찾기
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
@@ -95,8 +91,9 @@ public class ReviewService {
 //                .get(); // reviewRepository.findByUserAndReview(user.getId(), reviewId);
 
         // User에 Review 삭제
-        user.getReviews().remove(review);
-        // user.getReviewLikes().remove(reviewLike);
+        user.getReviews().remove(review); // user.getReviewLikes().remove(reviewLike);
+
+        return review;
     }
 
     public ReviewLikeDto getLikeCount(int reviewId) {
@@ -109,10 +106,11 @@ public class ReviewService {
     }
 
     @Transactional
-    public void likeReview(User user, int reviewId, String like) {
+    public ReviewLike likeReview(User user, int reviewId, String like) {
         // 하루세줄 및 하루세줄 좋아요 찾기
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
         ReviewLike reviewLike = user.getReviewLikes().stream()
                 .filter(o -> o.getReview().getId() == reviewId)
                 .findFirst()
@@ -137,6 +135,8 @@ public class ReviewService {
                 user.getReviewLikes().remove(reviewLike);
             }
         }
+
+        return reviewLike;
     }
 
     // 본인 제외 하루세줄 리스트

@@ -1,11 +1,9 @@
 package com.dotetimer.service;
 
 import com.dotetimer.domain.*;
-import com.dotetimer.dto.PlanDto.PlanReqDto;
-import com.dotetimer.dto.PlanDto.PlanResDto;
-import com.dotetimer.dto.PlanDto.RecordReqDto;
-import com.dotetimer.exception.CustomException;
-import com.dotetimer.mapper.PlanMapper;
+import com.dotetimer.dto.PlanDto.*;
+import com.dotetimer.infra.exception.CustomException;
+import com.dotetimer.infra.mapper.PlanMapper;
 import com.dotetimer.repository.CoinRepository;
 import com.dotetimer.repository.PlanInfoRepository;
 import com.dotetimer.repository.PlanRepository;
@@ -17,8 +15,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.dotetimer.exception.ErrorCode.INVALID_DATA;
-import static com.dotetimer.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static com.dotetimer.infra.exception.ErrorCode.INVALID_DATA;
+import static com.dotetimer.infra.exception.ErrorCode.MEMBER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -29,12 +27,12 @@ public class PlanService {
     private final PlanInfoRepository planInfoRepository;
 
     @Transactional
-    public void createPlan(User user, PlanReqDto planReqDto) {
+    public PlanInfo createPlanInfo(User user, PlanInfoReqDto planInfoReqDto) {
         // Null 및 유효성 확인
-        if (!checkValidPlan(planReqDto)) throw new CustomException(INVALID_DATA);
+        if (!checkValidPlanInfo(planInfoReqDto)) throw new CustomException(INVALID_DATA);
 
         // 코인 찾기 및 생성
-        Coin coin = coinRepository.findByIdAndStudiedAt(user.getId(), LocalDate.now()).orElse(null); // Optional 클래스 : orElse, orElseGet, of, ofNulluable 등
+        Coin coin = coinRepository.findByUserIdAndStudiedAt(user.getId(), LocalDate.now()).orElse(null); // Optional 클래스 : orElse, orElseGet, of, ofNulluable 등
         if (coin == null) {
             coin = Coin.builder()
                     .user(user)
@@ -45,57 +43,75 @@ public class PlanService {
         }
 
         // 할일정보 생성
-        PlanInfo planInfo = PlanInfo.builder()
-                .title(planReqDto.getTitle())
-                .category(planReqDto.getCategory())
-                .color(planReqDto.getColor())
-                .repeatDay(planReqDto.getRepeatDay())
-                .completedAt(planReqDto.getCompletedAt())
-                .build();
-
-        // 할일 생성
-        Plan plan = Plan.builder()
-                .coin(coin) // Coin에 coin 추가
-                .planInfo(planInfo) // Plan에 planInfo 추가
-                .startTime(planReqDto.getStartTime())
-                .endTime(planReqDto.getEndTime())
-                .recorded(false)
-                .build();
+        PlanInfo planInfo = PlanMapper.INSTANCE.toPlanInfo(planInfoReqDto);
 
         // DB 저장 (순서 조심 : 기본키 테이블 먼저)
         planInfoRepository.save(planInfo);
-        planRepository.save(plan);
+
+        return planInfo;
     }
 
     @Transactional
-    public void createRecord(User user, RecordReqDto recordReqDto, int planInfoId) {
+    public PlanInfo updatePlanInfo(PlanInfoReqDto planInfoReqDto, int planInfoId) {
         // Null 및 유효성 확인
-        if (!checkValidRecord(recordReqDto)) throw new CustomException(INVALID_DATA);
+        if (!checkValidPlanInfo(planInfoReqDto)) throw new CustomException(INVALID_DATA);
+
+        // 할일정보 찾기
+        PlanInfo planInfo = planInfoRepository.findById(planInfoId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        // Entity 수정
+        planInfo.updatePlanInfo(planInfoReqDto.getTitle(), planInfoReqDto.getCategory(), planInfoReqDto.getColor(), planInfoReqDto.getRepeatDay(), planInfoReqDto.getCompletedAt());
+
+        // DB 저장
+        planInfoRepository.save(planInfo);
+
+        return planInfo;
+    }
+
+    @Transactional
+    public Plan createPlanOrRecord(User user, PlanReqDto planReqDto, int planInfoId, boolean record) {
+        // Null 및 유효성 확인
+        if (!checkValidPlanRecord(planReqDto)) throw new CustomException(INVALID_DATA);
 
         // 할일정보 찾기(계획이 존재해야 기록 등록 가능)
         PlanInfo planInfo = planInfoRepository.findById(planInfoId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        // 코인 찾기
-        Coin coin = coinRepository.findByIdAndStudiedAt(user.getId(), LocalDate.now())
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        // 코인 찾기 및 생성
+        Coin coin = coinRepository.findByUserIdAndStudiedAt(user.getId(), LocalDate.now()).orElse(null); // Optional 클래스 : orElse, orElseGet, of, ofNulluable 등
+        if (coin == null) {
+            coin = Coin.builder()
+                    .user(user)
+                    .coinCount(0)
+                    .studiedAt(LocalDate.now())
+                    .build();
+            coinRepository.save(coin);
+        }
 
         // 할일 생성(한일 기록 : recorded = true)
         Plan plan = Plan.builder()
                 .coin(coin) // Coin에 coin 추가
                 .planInfo(planInfo) // Plan에 planInfo 추가
-                .startTime(recordReqDto.getStartTime())
-                .endTime(recordReqDto.getEndTime())
-                .recorded(true)
+                .startTime(planReqDto.getStartTime())
+                .endTime(planReqDto.getEndTime())
+                .recorded(record)
                 .build();
 
-        // 코인 개수 추가 // plan.getCoin().updateCoin(plan.calCoin());
-        coin.updateCoin(coin.getCoinCount() + plan.calCoin());
-        user.updateCoin(user.getCoinCount() + plan.calCoin());
+        // 한일
+        if (record) {
+            // 코인 개수 추가 // plan.getCoin().updateCoin(plan.calCoin());
+            coin.updateCoin(coin.getCoinCount() + plan.calCoin());
+            user.updateCoin(user.getCoinCount() + plan.calCoin());
+
+            // DB 저장
+            coinRepository.save(coin);
+        }
 
         // DB 저장
-        coinRepository.save(coin);
         planRepository.save(plan);
+
+        return plan;
     }
 
     public PlanResDto getPlan(int planId) {
@@ -109,54 +125,41 @@ public class PlanService {
     }
 
     @Transactional
-    public void updatePlan(int planId, PlanReqDto planReqDto) {
+    public Plan updatePlanOrRecord(User user, PlanReqDto planReqDto, int planId, boolean record) {
         // Null 및 유효성 확인
-        if (!checkValidPlan(planReqDto)) throw new CustomException(INVALID_DATA);
+        if (!checkValidPlanRecord(planReqDto)) throw new CustomException(INVALID_DATA);
 
         // 할일 및 할일정보 찾기
-        Plan plan = planRepository.findById(planId)
+        Plan plan = planRepository.findByIdAndRecorded(planId, record)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
         PlanInfo planInfo = planInfoRepository.findById(plan.getPlanInfo().getId())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        // 한일여부 확인
-        if (plan.isRecorded()) throw new CustomException(MEMBER_NOT_FOUND);
+        // 코인 이전 개수 차감
+        if (record) {
+            plan.getCoin().updateCoin(plan.getCoin().getCoinCount() - plan.calCoin());
+            user.updateCoin(user.getCoinCount() - plan.calCoin());
+        }
 
         // Entity 수정
         plan.updatePlan(planReqDto.getStartTime(), planReqDto.getEndTime());
-        planInfo.updatePlanInfo(planReqDto.getTitle(), planReqDto.getCategory(), planReqDto.getColor(), planReqDto.getRepeatDay(), planReqDto.getCompletedAt());
 
-        // DB 저장
-        planRepository.save(plan);
-        planInfoRepository.save(planInfo);
-    }
-
-    @Transactional
-    public void updateRecord(int planId, RecordReqDto recordReqDto) {
-        // Null 및 유효성 확인
-        if (!checkValidRecord(recordReqDto)) throw new CustomException(INVALID_DATA);
-
-        // 할일 및 할일정보 찾기
-        Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
-
-        // 한일여부 확인
-        if (!plan.isRecorded()) throw new CustomException(MEMBER_NOT_FOUND);
-
-        // Entity 수정
-        plan.updatePlan(recordReqDto.getStartTime(), recordReqDto.getEndTime());
-
-        // 코인 개수 변경
-        plan.getCoin().updateCoin(plan.calCoin());
+        // 코인 이후 개수 가산
+        if (record) {
+            plan.getCoin().updateCoin(plan.getCoin().getCoinCount() + plan.calCoin());
+            user.updateCoin(user.getCoinCount() + plan.calCoin());
+        }
 
         // DB 저장
         planRepository.save(plan); // DB의 coin 바뀌는지
+
+        return plan;
     }
 
     @Transactional
-    public void deletePlan(User user, int planId) {
+    public Plan deletePlan(User user, int planId) {
         // 코인 찾기
-        Coin coin = coinRepository.findByIdAndStudiedAt(user.getId(), LocalDate.now())
+        Coin coin = coinRepository.findByUserIdAndStudiedAt(user.getId(), LocalDate.now())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 할일 찾기
@@ -195,6 +198,8 @@ public class PlanService {
             // Record만 삭제
             planRepository.delete(plan);
         }
+
+        return plan;
     }
 
     public List<PlanResDto> getPlanList(User user, boolean record, LocalDate studiedAt) {
@@ -222,15 +227,16 @@ public class PlanService {
     }
 
     // Null 및 유효성 확인
-    private boolean checkValidPlan(PlanReqDto planReqDto) {
-        if ((planReqDto.getTitle() == null) || (planReqDto.getCategory() == null) || (planReqDto.getColor() == null) || (planReqDto.getStartTime() == null) || (planReqDto.getEndTime() == null) || (planReqDto.getRepeatDay() == null) || (planReqDto.getCompletedAt() == null))
+    private boolean checkValidPlanInfo(PlanInfoReqDto planInfoReqDto) {
+        if ((planInfoReqDto.getTitle() == null) || (planInfoReqDto.getCategory() == null) || (planInfoReqDto.getColor() == null) || (planInfoReqDto.getRepeatDay() == null) || (planInfoReqDto.getCompletedAt() == null))
             return false;
-        return !planReqDto.getStartTime().isAfter(planReqDto.getEndTime());
+        if (planInfoReqDto.getCompletedAt().isAfter(LocalDate.now())) return false; // 과거 시간
+        return true;
     }
 
-    private boolean checkValidRecord(RecordReqDto recordReqDto) {
-        if ((recordReqDto.getStartTime() == null) || (recordReqDto.getEndTime() == null))
+    private boolean checkValidPlanRecord(PlanReqDto planReqDto) {
+        if ((planReqDto.getStartTime() == null) || (planReqDto.getEndTime() == null))
             return false;
-        return !recordReqDto.getStartTime().isAfter(recordReqDto.getEndTime());
+        return !planReqDto.getStartTime().isAfter(planReqDto.getEndTime());
     }
 }

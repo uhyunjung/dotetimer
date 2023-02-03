@@ -1,4 +1,4 @@
-package com.dotetimer.domain;
+package com.dotetimer.infra;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
