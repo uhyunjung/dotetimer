@@ -30,7 +30,7 @@ public class PlanServiceTest {
 
     @Test
     @DisplayName("Plan add plan info success")
-    void addPlanInfoSuccess() throws CustomException {
+    void createPlanInfoSuccess() throws CustomException {
         User user = userRepository.findByEmail("tester1@gmail.com")
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         assertNotNull(user);
@@ -69,7 +69,7 @@ public class PlanServiceTest {
 
     @Test
     @DisplayName("Plan add plan or record success")
-    void addPlanOrRecordSuccess() throws CustomException {
+    void createPlanOrRecordSuccess() throws CustomException {
         User user = userRepository.findByEmail("tester1@gmail.com")
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         assertNotNull(user);

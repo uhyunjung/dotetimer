@@ -3,7 +3,6 @@ package com.dotetimer.service;
 import com.dotetimer.domain.User;
 import com.dotetimer.dto.StatDto.*;
 import com.dotetimer.infra.exception.CustomException;
-import com.dotetimer.infra.jwt.JwtTokenProvider;
 import com.dotetimer.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +27,7 @@ public class StatServiceTest {
 
     @Test
     @DisplayName("Stat me success")
-    void myStatSuccess() throws CustomException {
+    void getMyStatListSuccess() throws CustomException {
         User user = userRepository.findByEmail("tester1@gmail.com")
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         assertNotNull(user);
@@ -38,11 +37,21 @@ public class StatServiceTest {
 
     @Test
     @DisplayName("Stat group success")
-    void groupStatSuccess() throws CustomException {
+    void getGroupStatListSuccess() throws CustomException {
         User user = userRepository.findByEmail("tester1@gmail.com")
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         assertNotNull(user);
         List<GroupsStatResDto> groupsStatList = statService.getGroupStatList(user);
         assertEquals(3, groupsStatList.stream().count());
+    }
+
+    @Test
+    @DisplayName("Stat User success")
+    void getUserStatListSuccess() throws CustomException {
+        User user = userRepository.findByEmail("tester1@gmail.com")
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        assertNotNull(user);
+        List<UserStatResDto> myStatList = statService.getUserStatList(user.getId());
+        assertEquals(4, myStatList.stream().count());
     }
 }

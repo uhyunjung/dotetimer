@@ -41,7 +41,7 @@ INSERT INTO coin(coin_count,studied_at,user_id) VALUES (0,"2023-01-22 12:10:30",
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (0,"2023-01-23 12:10:30",1);
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (0,"2023-01-27 12:10:30",1);
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (0,"2023-01-25 12:10:30",2);
-INSERT INTO coin(coin_count,studied_at,user_id) VALUES (3,"2023-01-22 12:10:30",1);
+INSERT INTO coin(coin_count,studied_at,user_id) VALUES (10,"2023-01-22 12:10:30",1);
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (3,"2023-01-23 12:10:30",2);
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (3,"2023-01-26 12:10:30",2);
 INSERT INTO coin(coin_count,studied_at,user_id) VALUES (3,"2023-01-29 12:10:30",9);
@@ -109,7 +109,7 @@ INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:
 INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:20:30",false,"12:10:20",5,5);
 
 -- Plan(Record) 데이터 생성
-INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:40:30",true,"12:10:20",6,6);
+INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("13:50:30",true,"12:10:20",6,6);
 INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:40:30",true,"12:10:20",7,7);
 INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:40:30",true,"12:10:20",8,8);
 INSERT INTO plan(end_time,recorded,start_time,coin_id,plan_info_id) VALUES ("12:40:30",true,"12:10:20",9,9);
