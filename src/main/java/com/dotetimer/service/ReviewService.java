@@ -117,7 +117,7 @@ public class ReviewService {
                 .get(); // reviewRepository.findByUserAndReview(user.getId(), reviewId);
 
         if (reviewLike == null) {
-            // 좋아요
+            // 좋아요 가능
             if (like.equals("true")) {
                 reviewLikeRepository.save(
                         ReviewLike.builder()
