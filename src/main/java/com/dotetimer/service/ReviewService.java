@@ -88,7 +88,8 @@ public class ReviewService {
 //        ReviewLike reviewLike = user.getReviewLikes().stream()
 //                .filter(o -> o.getReview().getId() == reviewId)
 //                .findFirst()
-//                .get(); // reviewRepository.findByUserAndReview(user.getId(), reviewId);
+//                .get();
+//        reviewRepository.findByUserAndReview(user.getId(), reviewId);
 
         // User에 Review 삭제
         user.getReviews().remove(review); // user.getReviewLikes().remove(reviewLike);
