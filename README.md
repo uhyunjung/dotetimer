@@ -78,7 +78,7 @@
 **1. 원격 저장소 복제**
 
 ```bash
-$ git clone https://github.com/yhyeonjg/dotetimer.git
+$ git clone https://github.com/uhyunjung/dotetimer.git
 ```
 **2. build.gradle**
 > build.gradle에서 Ctrl+Shift+O 실행
